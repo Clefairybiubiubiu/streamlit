@@ -244,7 +244,7 @@ export const StyledStreamlitMarkdown =
 
         // Handles the horizontal divider:
         hr: {
-          margin: "2em 0",
+          margin: `${theme.spacing.xl} 0 ${theme.spacing.xl} 0`,
           padding: 0,
           // Reset Firefox's gray color:
           color: "inherit",
@@ -256,6 +256,11 @@ export const StyledStreamlitMarkdown =
           "&:not([size])": {
             height: theme.sizes.borderWidth,
           },
+        },
+
+        // Ensure consistent spacing after hr elements
+        "hr + *": {
+          marginTop: theme.spacing.lg,
         },
 
         table: {
