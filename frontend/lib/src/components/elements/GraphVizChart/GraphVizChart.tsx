@@ -16,7 +16,6 @@
 
 import React, { memo, ReactElement, useEffect } from "react"
 
-import { select } from "d3"
 import { Engine, graphviz } from "d3-graphviz"
 import { getLogger } from "loglevel"
 
@@ -25,7 +24,10 @@ import {
   streamlit,
 } from "@streamlit/protobuf"
 
-import { shouldChildrenStretch } from "~lib/components/core/Layout/utils"
+import {
+  shouldHeightStretch,
+  shouldWidthStretch,
+} from "~lib/components/core/Layout/utils"
 import { ElementFullscreenContext } from "~lib/components/shared/ElementFullscreen/ElementFullscreenContext"
 import { withFullScreenWrapper } from "~lib/components/shared/FullScreenWrapper"
 import Toolbar, {
@@ -39,6 +41,7 @@ export interface GraphVizChartProps {
   element: GraphVizChartProto
   disableFullscreenMode?: boolean
   widthConfig?: streamlit.IWidthConfig | null
+  heightConfig?: streamlit.IHeightConfig | null
 }
 export const LOG = getLogger("GraphVizChart")
 
@@ -46,6 +49,7 @@ function GraphVizChart({
   element,
   disableFullscreenMode,
   widthConfig,
+  heightConfig,
 }: Readonly<GraphVizChartProps>): ReactElement {
   const chartId = `st-graphviz-chart-${element.elementId}`
 
@@ -59,7 +63,9 @@ function GraphVizChart({
 
   // Determine if we should use container width based on layout config or legacy prop
   const shouldUseContainerWidth =
-    shouldChildrenStretch(widthConfig) || element.useContainerWidth
+    shouldWidthStretch(widthConfig) || element.useContainerWidth
+
+  const shouldUseContainerHeight = shouldHeightStretch(heightConfig)
 
   useEffect(() => {
     try {
@@ -77,14 +83,20 @@ function GraphVizChart({
     element.engine,
     element.spec,
     shouldUseContainerWidth,
+    shouldUseContainerHeight,
     isFullScreen,
   ])
 
   return (
     <StyledToolbarElementContainer
       width={width ?? 0}
-      height={fullScreenHeight}
+      height={
+        !isFullScreen
+          ? (heightConfig?.pixelHeight ?? undefined)
+          : (fullScreenHeight ?? undefined)
+      }
       useContainerWidth={isFullScreen || shouldUseContainerWidth}
+      useContainerHeight={shouldUseContainerHeight}
     >
       <Toolbar
         target={StyledToolbarElementContainer}
@@ -99,6 +111,7 @@ function GraphVizChart({
         id={chartId}
         isFullScreen={isFullScreen}
         useContainerWidth={shouldUseContainerWidth}
+        useContainerHeight={shouldUseContainerHeight}
       />
     </StyledToolbarElementContainer>
   )
